@@ -2,7 +2,7 @@
 Тесты для калькулятора обратной польской нотации
 """
 
-import pytest
+import pytest  # pylint: disable=import-error
 from rpn_calculator import RPNCalculator
 
 
