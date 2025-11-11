@@ -131,13 +131,14 @@ class TestRPNCalculator:
         # Скобки меняют приоритет
         assert calculator.calculate("(2+3)*4") == 20
 
-    def test_should_pop_operator(self, calculator):
-        """Тест логики выталкивания операторов"""
-        assert calculator._should_pop_operator('+', '*') is True
-        assert calculator._should_pop_operator('*', '+') is False
-        assert calculator._should_pop_operator('+', '+') is True  # левая ассоциативность
-        assert calculator._should_pop_operator('^', '^') is False  # правая ассоциативность
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+    def test_operator_popping_logic(self, calculator):
+        """Тест логики выталкивания операторов через публичные методы"""
+        # Тестируем через публичное поведение, а не защищенные методы
+        # Левая ассоциативность: + перед +
+        assert calculator.shunting_yard("2+3+4") == ['2', '3', '+', '4', '+']
+        # Правая ассоциативность: ^ перед ^
+        assert calculator.shunting_yard("2^3^2") == ['2', '3', '2', '^', '^']
+        # Высокий приоритет перед низким: * перед +
+        assert calculator.shunting_yard("2+3*4") == ['2', '3', '4', '*', '+']
+        # Низкий приоритет перед высоким: + после *
+        assert calculator.shunting_yard("2*3+4") == ['2', '3', '*', '4', '+']
