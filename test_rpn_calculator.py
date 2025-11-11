@@ -11,6 +11,7 @@ class TestRPNCalculator:
 
     @pytest.fixture
     def calculator(self):
+        """Создает экземпляр калькулятора для тестов"""
         return RPNCalculator()
 
     def test_tokenize(self, calculator):
@@ -50,12 +51,14 @@ class TestRPNCalculator:
     def test_shunting_yard_power(self, calculator):
         """Тест операции возведения в степень"""
         assert calculator.shunting_yard("2^3") == ['2', '3', '^']
-        assert calculator.shunting_yard("2^3^2") == ['2', '3', '2', '^', '^']  # правоассоциативность
+        # правоассоциативность
+        assert calculator.shunting_yard("2^3^2") == ['2', '3', '2', '^', '^']
         assert calculator.shunting_yard("2+3^2") == ['2', '3', '2', '^', '+']
 
     def test_shunting_yard_complex(self, calculator):
         """Тест сложных выражений"""
-        assert calculator.shunting_yard("3+4*2/(1-5)^2") == ['3', '4', '2', '*', '1', '5', '-', '2', '^', '/', '+']
+        expected = ['3', '4', '2', '*', '1', '5', '-', '2', '^', '/', '+']
+        assert calculator.shunting_yard("3+4*2/(1-5)^2") == expected
 
     def test_evaluate_rpn_simple(self, calculator):
         """Тест вычисления простых RPN выражений"""
@@ -67,9 +70,11 @@ class TestRPNCalculator:
 
     def test_evaluate_rpn_complex(self, calculator):
         """Тест вычисления сложных RPN выражений"""
-        assert calculator.evaluate_rpn(['2', '3', '4', '*', '+']) == 14  # 2 + 3 * 4
-        assert calculator.evaluate_rpn(
-            ['3', '4', '2', '*', '1', '5', '-', '2', '^', '/', '+']) == 3.5  # 3 + 4 * 2 / (1 - 5)^2
+        # 2 + 3 * 4
+        assert calculator.evaluate_rpn(['2', '3', '4', '*', '+']) == 14
+        # 3 + 4 * 2 / (1 - 5)^2
+        rpn_expr = ['3', '4', '2', '*', '1', '5', '-', '2', '^', '/', '+']
+        assert calculator.evaluate_rpn(rpn_expr) == 3.5
 
     def test_evaluate_rpn_division_by_zero(self, calculator):
         """Тест деления на ноль"""
@@ -95,7 +100,8 @@ class TestRPNCalculator:
         assert calculator.calculate("(2+3)*4") == 20
         assert calculator.calculate("2+3*4") == 14
         assert calculator.calculate("3+4*2/(1-5)^2") == 3.5
-        assert calculator.calculate("2^3^2") == 512  # 2^(3^2) = 2^9 = 512
+        # 2^(3^2) = 2^9 = 512
+        assert calculator.calculate("2^3^2") == 512
 
     def test_calculate_float(self, calculator):
         """Тест вычисления с дробными числами"""
@@ -124,6 +130,13 @@ class TestRPNCalculator:
         assert calculator.calculate("2*3^2") == 18
         # Скобки меняют приоритет
         assert calculator.calculate("(2+3)*4") == 20
+
+    def test_should_pop_operator(self, calculator):
+        """Тест логики выталкивания операторов"""
+        assert calculator._should_pop_operator('+', '*') is True
+        assert calculator._should_pop_operator('*', '+') is False
+        assert calculator._should_pop_operator('+', '+') is True  # левая ассоциативность
+        assert calculator._should_pop_operator('^', '^') is False  # правая ассоциативность
 
 
 if __name__ == "__main__":

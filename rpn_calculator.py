@@ -70,9 +70,7 @@ class RPNCalculator:
             elif token in self.operators:
                 while (operator_stack and
                        operator_stack[-1] != '(' and
-                       (self.operators[operator_stack[-1]]['precedence'] > self.operators[token]['precedence'] or
-                        (self.operators[operator_stack[-1]]['precedence'] == self.operators[token]['precedence'] and
-                         self.operators[token]['associativity'] == 'left'))):
+                       self._should_pop_operator(token, operator_stack[-1])):
                     output.append(operator_stack.pop())
                 operator_stack.append(token)
             elif token == '(':
@@ -91,6 +89,27 @@ class RPNCalculator:
             output.append(operator_stack.pop())
 
         return output
+
+    def _should_pop_operator(self, current_op: str, stack_top: str) -> bool:
+        """
+        Определяет, нужно ли выталкивать оператор из стека
+
+        Args:
+            current_op: текущий оператор
+            stack_top: оператор на вершине стека
+
+        Returns:
+            True если нужно вытолкнуть оператор из стека
+        """
+        if stack_top not in self.operators:
+            return False
+
+        current_prec = self.operators[current_op]['precedence']
+        stack_prec = self.operators[stack_top]['precedence']
+        current_assoc = self.operators[current_op]['associativity']
+
+        return (stack_prec > current_prec or
+                (stack_prec == current_prec and current_assoc == 'left'))
 
     def evaluate_rpn(self, rpn_expression: list) -> float:
         """
@@ -173,11 +192,10 @@ def main():
 
         except ValueError as e:
             print(f"Ошибка: {e}")
-        except KeyboardInterrupt:
-            print("\nВыход из прогр"
-                  "аммы")
+        except (KeyboardInterrupt, EOFError):
+            print("\nВыход из программы")
             break
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             print(f"Неожиданная ошибка: {e}")
 
 
